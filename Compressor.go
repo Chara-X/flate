@@ -1,16 +1,14 @@
 package flate
 
-type Compressor struct{}
+type Compressor struct {
+	w *BitWriter
+}
 
 func (c *Compressor) Write(b []byte) (n int, err error) {
-	n = len(b)
-	for len(b) > 0 {
-		c.step()
-		// b = b[c.fill(c, b):]
-		// if c.err != nil {
-		// 	return 0, c.err
-		// }
+	var freqs = make([]int, 256)
+	for _, v := range b {
+		freqs[v]++
 	}
-	return n, nil
+	freqs[256] = 1
+	return 0, nil
 }
-func (d *Compressor) step() {}
