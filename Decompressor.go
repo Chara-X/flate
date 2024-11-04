@@ -13,11 +13,10 @@ func (d *Decompressor) ReadBlock() []byte {
 	if blockType != 2 {
 		panic("not dynamic huffman")
 	}
-	d.ReadBits(10)
-	var nCLen = d.ReadBits(4) + 4
-	var codeLens = make([]byte, 19)
-	for i := 0; i < int(nCLen); i++ {
-		codeLens[codeOrder[i]] = byte(d.ReadBits(3))
+	d.ReadBits(14)
+	var codeLens = make([]int, 256)
+	for i := 0; i < len(codeLens); i++ {
+		codeLens[codeOrder[i]] = int(d.ReadBits(3))
 	}
 	return nil
 }
