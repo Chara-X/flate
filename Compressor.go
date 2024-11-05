@@ -13,6 +13,11 @@ type Compressor struct {
 }
 
 func (c *Compressor) Write(b []byte) (n int, err error) {
+	c.WriteBits(2, 3)
+	return 0, nil
+}
+
+func (c *Compressor) WriteX(b []byte) (n int, err error) {
 	var freqs = make([]int, 257)
 	for _, v := range b {
 		freqs[v]++
