@@ -1,191 +1,126 @@
 package flate
 
-import "math/bits"
-
-var StdLiteralEncoding = [256]PrefixCode{}
-var StdLengthEncoding = [256]PrefixCode{}
-var StdOffsetEncoding = [32768]PrefixCode{}
+var StdLiteralEncoding, StdLengthEncoding, StdOffsetEncoding = [256]PrefixCode{}, [256]PrefixCode{}, [32768]PrefixCode{}
 
 func init() {
 	for c := 0; c < 256; c++ {
-		var code, n = 0, 0
+		var code = []int{}
 		switch {
 		case c < 144:
-			code = c + 48
-			n = 8
-		case c < 256:
-			code = c + 256
-			n = 9
+			code = []int{c + 48, 8}
+		default:
+			code = []int{c + 256, 9}
 		}
-		StdLiteralEncoding[c] = PrefixCode{Code: reverseBits(code, n), N: n}
+		StdLiteralEncoding[c] = NewPrefixCode(code[0], code[1], 0, 0)
 	}
 	for c := 0; c < 256; c++ {
-		var code, n = 0, 0
+		var code = []int{}
 		switch {
 		case c < 8:
-			code = c + 1<<0
-			n = 7
+			code = []int{c + 1, 7, 0, 0}
 		case c < 10:
-			code = c + 9<<1
-			n = 8
+			code = []int{9, 7, c - 8, 1}
 		case c < 12:
-			code = c + 10<<1
-			n = 8
+			code = []int{10, 7, c - 10, 1}
 		case c < 14:
-			code = c + 11<<1
-			n = 8
+			code = []int{11, 7, c - 12, 1}
 		case c < 16:
-			code = c + 12<<1
-			n = 8
+			code = []int{12, 7, c - 14, 1}
 		case c < 20:
-			code = c + 13<<2
-			n = 9
+			code = []int{13, 7, c - 16, 3}
 		case c < 24:
-			code = c + 14<<2
-			n = 9
+			code = []int{14, 7, c - 20, 3}
 		case c < 28:
-			code = c + 15<<2
-			n = 9
+			code = []int{15, 7, c - 24, 3}
 		case c < 32:
-			code = c + 16<<2
-			n = 9
+			code = []int{16, 7, c - 28, 3}
 		case c < 40:
-			code = c + 17<<3
-			n = 10
+			code = []int{17, 7, c - 32, 7}
 		case c < 48:
-			code = c + 18<<3
-			n = 10
+			code = []int{18, 7, c - 40, 7}
 		case c < 56:
-			code = c + 19<<3
-			n = 10
+			code = []int{19, 7, c - 48, 7}
 		case c < 64:
-			code = c + 20<<3
-			n = 10
+			code = []int{20, 7, c - 56, 7}
 		case c < 80:
-			code = c + 21<<4
-			n = 11
+			code = []int{21, 7, c - 64, 15}
 		case c < 96:
-			code = c + 22<<4
-			n = 11
+			code = []int{22, 7, c - 80, 15}
 		case c < 112:
-			code = c + 23<<4
-			n = 11
+			code = []int{23, 7, c - 96, 15}
 		case c < 128:
-			code = c + 192<<4
-			n = 12
+			code = []int{24, 8, c - 112, 15}
 		case c < 160:
-			code = c + 193<<5
-			n = 13
+			code = []int{25, 8, c - 128, 31}
 		case c < 192:
-			code = c + 194<<5
-			n = 13
+			code = []int{26, 8, c - 160, 31}
 		case c < 224:
-			code = c + 195<<5
-			n = 13
+			code = []int{27, 8, c - 192, 31}
 		case c < 255:
-			code = c + 196<<5
-			n = 13
+			code = []int{28, 8, c - 224, 31}
 		case c < 256:
-			code = c + 197<<0
-			n = 8
+			code = []int{29, 8, 0, 0}
 		}
-		StdLengthEncoding[c] = PrefixCode{Code: reverseBits(code, n), N: n}
+		StdLengthEncoding[c] = NewPrefixCode(code[0], code[1], code[2], code[3])
 	}
 	for c := 0; c < 32768; c++ {
-		var code, n = 0, 0
+		var code = []int{}
 		switch {
-		case c < 1:
-			code = c + 0<<0
-			n = 5
-		case c < 2:
-			code = c + 1<<0
-			n = 5
-		case c < 3:
-			code = c + 2<<0
-			n = 5
 		case c < 4:
-			code = c + 3<<0
-			n = 5
+			code = []int{c, 5, 0, 0}
 		case c < 6:
-			code = c + 4<<1
-			n = 6
+			code = []int{4, 5, (c - 4) & 0x1, 1}
 		case c < 8:
-			code = c + 5<<1
-			n = 6
+			code = []int{5, 5, (c - 6) & 0x1, 1}
 		case c < 12:
-			code = c + 6<<2
-			n = 7
+			code = []int{6, 5, (c - 8) & 0x3, 2}
 		case c < 16:
-			code = c + 7<<2
-			n = 7
+			code = []int{7, 5, (c - 12) & 0x3, 2}
 		case c < 24:
-			code = c + 8<<3
-			n = 8
+			code = []int{8, 5, (c - 16) & 0x7, 3}
 		case c < 32:
-			code = c + 9<<3
-			n = 8
+			code = []int{9, 5, (c - 24) & 0x7, 3}
 		case c < 48:
-			code = c + 10<<4
-			n = 9
+			code = []int{10, 5, (c - 32) & 0xF, 4}
 		case c < 64:
-			code = c + 11<<4
-			n = 9
+			code = []int{11, 5, (c - 48) & 0xF, 4}
 		case c < 96:
-			code = c + 12<<5
-			n = 10
+			code = []int{12, 5, (c - 64) & 0x1F, 5}
 		case c < 128:
-			code = c + 13<<5
-			n = 10
+			code = []int{13, 5, (c - 96) & 0x1F, 5}
 		case c < 192:
-			code = c + 14<<6
-			n = 11
+			code = []int{14, 5, (c - 128) & 0x3F, 6}
 		case c < 256:
-			code = c + 15<<6
-			n = 11
+			code = []int{15, 5, (c - 192) & 0x3F, 6}
 		case c < 384:
-			code = c + 16<<7
-			n = 12
+			code = []int{16, 5, (c - 256) & 0x7F, 7}
 		case c < 512:
-			code = c + 17<<7
-			n = 12
+			code = []int{17, 5, (c - 384) & 0x7F, 7}
 		case c < 768:
-			code = c + 18<<8
-			n = 13
+			code = []int{18, 5, (c - 512) & 0xFF, 8}
 		case c < 1024:
-			code = c + 19<<8
-			n = 13
+			code = []int{19, 5, (c - 768) & 0xFF, 8}
 		case c < 1536:
-			code = c + 20<<9
-			n = 14
+			code = []int{20, 5, (c - 1024) & 0x1FF, 9}
 		case c < 2048:
-			code = c + 21<<9
-			n = 14
+			code = []int{21, 5, (c - 1536) & 0x1FF, 9}
 		case c < 3072:
-			code = c + 22<<10
-			n = 15
+			code = []int{22, 5, (c - 2048) & 0x3FF, 10}
 		case c < 4096:
-			code = c + 23<<10
-			n = 15
+			code = []int{23, 5, (c - 3072) & 0x3FF, 10}
 		case c < 6144:
-			code = c + 24<<11
-			n = 16
+			code = []int{24, 5, (c - 4096) & 0x7FF, 11}
 		case c < 8192:
-			code = c + 25<<11
-			n = 16
+			code = []int{25, 5, (c - 6144) & 0x7FF, 11}
 		case c < 12288:
-			code = c + 26<<12
-			n = 17
+			code = []int{26, 5, (c - 8192) & 0xFFF, 12}
 		case c < 16384:
-			code = c + 27<<12
-			n = 17
+			code = []int{27, 5, (c - 12288) & 0xFFF, 12}
 		case c < 24576:
-			code = c + 28<<13
-			n = 18
+			code = []int{28, 5, (c - 16384) & 0x1FFF, 13}
 		case c < 32768:
-			code = c + 29<<13
-			n = 18
+			code = []int{29, 5, (c - 24576) & 0x1FFF, 13}
 		}
-		StdOffsetEncoding[c] = PrefixCode{Code: reverseBits(code, n), N: n}
+		StdOffsetEncoding[c] = NewPrefixCode(code[0], code[1], code[2], code[3])
 	}
 }
-func reverseBits(x int, n int) int { return int(bits.Reverse64(uint64(x << (64 - n)))) }
