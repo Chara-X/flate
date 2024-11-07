@@ -69,57 +69,57 @@ func init() {
 		case c < 4:
 			code = []int{c, 5, 0, 0}
 		case c < 6:
-			code = []int{4, 5, (c - 4) & 0x1, 1}
+			code = []int{4, 5, c - 4, 1}
 		case c < 8:
-			code = []int{5, 5, (c - 6) & 0x1, 1}
+			code = []int{5, 5, c - 6, 1}
 		case c < 12:
-			code = []int{6, 5, (c - 8) & 0x3, 2}
+			code = []int{6, 5, c - 8, 2}
 		case c < 16:
-			code = []int{7, 5, (c - 12) & 0x3, 2}
+			code = []int{7, 5, c - 12, 2}
 		case c < 24:
-			code = []int{8, 5, (c - 16) & 0x7, 3}
+			code = []int{8, 5, c - 16, 3}
 		case c < 32:
-			code = []int{9, 5, (c - 24) & 0x7, 3}
+			code = []int{9, 5, c - 24, 3}
 		case c < 48:
-			code = []int{10, 5, (c - 32) & 0xF, 4}
+			code = []int{10, 5, c - 32, 4}
 		case c < 64:
-			code = []int{11, 5, (c - 48) & 0xF, 4}
+			code = []int{11, 5, c - 48, 4}
 		case c < 96:
-			code = []int{12, 5, (c - 64) & 0x1F, 5}
+			code = []int{12, 5, c - 64, 5}
 		case c < 128:
-			code = []int{13, 5, (c - 96) & 0x1F, 5}
+			code = []int{13, 5, c - 96, 5}
 		case c < 192:
-			code = []int{14, 5, (c - 128) & 0x3F, 6}
+			code = []int{14, 5, c - 128, 6}
 		case c < 256:
-			code = []int{15, 5, (c - 192) & 0x3F, 6}
+			code = []int{15, 5, c - 192, 6}
 		case c < 384:
-			code = []int{16, 5, (c - 256) & 0x7F, 7}
+			code = []int{16, 5, c - 256, 7}
 		case c < 512:
-			code = []int{17, 5, (c - 384) & 0x7F, 7}
+			code = []int{17, 5, c - 384, 7}
 		case c < 768:
-			code = []int{18, 5, (c - 512) & 0xFF, 8}
+			code = []int{18, 5, c - 512, 8}
 		case c < 1024:
-			code = []int{19, 5, (c - 768) & 0xFF, 8}
+			code = []int{19, 5, c - 768, 8}
 		case c < 1536:
-			code = []int{20, 5, (c - 1024) & 0x1FF, 9}
+			code = []int{20, 5, c - 1024, 9}
 		case c < 2048:
-			code = []int{21, 5, (c - 1536) & 0x1FF, 9}
+			code = []int{21, 5, c - 1536, 9}
 		case c < 3072:
-			code = []int{22, 5, (c - 2048) & 0x3FF, 10}
+			code = []int{22, 5, c - 2048, 10}
 		case c < 4096:
-			code = []int{23, 5, (c - 3072) & 0x3FF, 10}
+			code = []int{23, 5, c - 3072, 10}
 		case c < 6144:
-			code = []int{24, 5, (c - 4096) & 0x7FF, 11}
+			code = []int{24, 5, c - 4096, 11}
 		case c < 8192:
-			code = []int{25, 5, (c - 6144) & 0x7FF, 11}
+			code = []int{25, 5, c - 6144, 11}
 		case c < 12288:
-			code = []int{26, 5, (c - 8192) & 0xFFF, 12}
+			code = []int{26, 5, c - 8192, 12}
 		case c < 16384:
-			code = []int{27, 5, (c - 12288) & 0xFFF, 12}
+			code = []int{27, 5, c - 12288, 12}
 		case c < 24576:
-			code = []int{28, 5, (c - 16384) & 0x1FFF, 13}
+			code = []int{28, 5, c - 16384, 13}
 		case c < 32768:
-			code = []int{29, 5, (c - 24576) & 0x1FFF, 13}
+			code = []int{29, 5, c - 24576, 13}
 		}
 		StdOffsetEncoding[c] = NewPrefixCode(code[0], code[1], code[2], code[3])
 	}
