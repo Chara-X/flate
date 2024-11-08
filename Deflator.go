@@ -19,8 +19,7 @@ func (d *Deflator) Write(b []byte) (n int, err error) {
 				l++
 			}
 			if l > length {
-				offset = i - j
-				length = l
+				length, offset = l, i-j
 			}
 		}
 		if length > 3 {
